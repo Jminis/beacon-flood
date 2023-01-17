@@ -1,6 +1,8 @@
 #include <iostream>
+#include <unistd.h>
 #include <tins/tins.h>
 #include <list>
+#include <ctime>
 
 using namespace std;
 
@@ -10,27 +12,38 @@ void usage(){
 	exit(0);
 }
 
+string rand_mac(){
+	string result = "";
+	int nRandom;
+	for(int i=0;i<5;i++){
+		nRandom = rand()%10;
+		result += to_string(nRandom);
+		nRandom = rand()%10;
+		result += to_string(nRandom);
+		if(i!=4) result += ":";
+			
+	}
+	return result;
+}
+
 int main(int argc, char *argv[]) {
 	if(argc != 2) usage();
 	// -- Base Setting
 	list<string> ssidList{
-		"1.TESTJAM",
-		"2.TESTJAM",
-		"3.TESTJAM",
-		"4.TESTJAM",
-		"5.TESTJAM",
-		"6.TESTJAM",
+		"SecurityFactoria1",
+		"SecurityFactorial",
+		"SecurityFactoriaI",
 	};
 	list<string>::iterator it = ssidList.begin();
 
 	Tins::PacketSender sender;
 	Tins::NetworkInterface iface(argv[1]);
-
+	srand((unsigned int)time(0));
 	// -- Packet Information
 	while(1){
 		Tins::Dot11Beacon beacon;
 		beacon.addr1("ff:ff:ff:ff:ff:ff");
-		beacon.addr2("12:48:16:32:64:12");
+		beacon.addr2(rand_mac());
 		beacon.addr3(beacon.addr2());
 		beacon.ssid(*it);
 		beacon.ds_parameter_set(8);
@@ -43,6 +56,7 @@ int main(int argc, char *argv[]) {
 		sender.send(radio_tap,iface);
 		if (++it == ssidList.end())
 			it = ssidList.begin();
+		usleep(1000);
 	}
 
 	return 0;
